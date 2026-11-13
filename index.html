@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>คุ้มไหม? เทียบราคา</title>
+<meta name="description" content="เปรียบเทียบราคาต่อหน่วย ดูว่าแพ็คไหนคุ้มกว่า">
+<meta name="theme-color" content="#14161a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="คุ้มไหม">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+  :root {
+    --bg: #14161a;
+    --surface: #1f2228;
+    --surface-2: #2a2e36;
+    --line: #343944;
+    --text: #f2f3f5;
+    --muted: #9aa1ad;
+    --accent: #f7c948;
+    --accent-ink: #1b1600;
+    --good: #3ddc84;
+    --good-bg: rgba(61, 220, 132, .12);
+    --bad: #ff6b6b;
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f2ec;
+      --surface: #ffffff;
+      --surface-2: #f0eee8;
+      --line: #e1ddd2;
+      --text: #1d1d1f;
+      --muted: #6b6f78;
+      --accent: #f2b705;
+      --accent-ink: #1b1600;
+      --good: #12924f;
+      --good-bg: rgba(18, 146, 79, .1);
+      --bad: #d33;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font-family: "Sukhumvit Set", "Noto Sans Thai", "Leelawadee UI", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.4;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 16px 120px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 16px; }
+  h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+  h1 span { color: var(--accent); }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--surface);
+    color: var(--text); font: inherit; font-size: 14px; padding: 8px 14px;
+    border-radius: 999px; cursor: pointer; white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+
+  .items { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+  @media (max-width: 640px) {
+    .items { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+    .card { padding: 10px; }
+    input.num { font-size: 18px; padding: 8px; }
+    select { font-size: 14px; padding: 8px 2px; }
+    .unit-price { font-size: 17px; }
+  }
+  @media (max-width: 340px) { .items { grid-template-columns: minmax(0, 1fr); } }
+
+  .card {
+    background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius);
+    padding: 12px; position: relative; transition: border-color .2s, background .2s;
+  }
+  .card.best { border-color: var(--good); background: linear-gradient(var(--good-bg), var(--good-bg)), var(--surface); }
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .badge {
+    width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: var(--accent); color: var(--accent-ink); font-weight: 700; font-size: 14px;
+  }
+  .card.best .badge { background: var(--good); color: #fff; }
+  .name {
+    flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text);
+    font: inherit; font-weight: 600; padding: 4px 0; outline: none; border-bottom: 1px dashed transparent;
+  }
+  .name:focus { border-bottom-color: var(--muted); }
+  .name::placeholder { color: var(--muted); font-weight: 500; }
+  .remove {
+    border: 0; background: transparent; color: var(--muted); font-size: 20px; line-height: 1;
+    width: 28px; height: 28px; border-radius: 50%; cursor: pointer; flex: none;
+  }
+  .remove:hover { background: var(--surface-2); color: var(--bad); }
+
+  .field { display: block; margin-bottom: 8px; }
+  .field > span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .row { display: flex; gap: 6px; }
+  input.num, select {
+    width: 100%; min-width: 0; font: inherit; font-size: 20px; font-variant-numeric: tabular-nums;
+    padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--surface-2); color: var(--text); outline: none; text-align: right;
+  }
+  select { font-size: 15px; text-align: left; width: auto; flex: none; padding: 9px 6px; }
+  input.num:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+
+  .result {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums; min-height: 52px;
+  }
+  .unit-price { font-size: 20px; font-weight: 700; }
+  .unit-price small { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .verdict { font-size: 13px; margin-top: 2px; color: var(--muted); }
+  .card.best .verdict { color: var(--good); font-weight: 600; }
+  .verdict.worse { color: var(--bad); }
+
+  .add {
+    width: 100%; margin-top: 12px; padding: 12px; border: 2px dashed var(--line);
+    background: transparent; color: var(--muted); border-radius: var(--radius); font: inherit; cursor: pointer;
+  }
+  .add:hover { color: var(--text); border-color: var(--muted); }
+
+  .summary {
+    margin-top: 16px; background: var(--accent); color: var(--accent-ink);
+    border-radius: var(--radius); padding: 14px 16px; font-size: 16px;
+  }
+  .summary b { font-size: 18px; }
+  .summary .hint { font-size: 13px; opacity: .8; margin-top: 4px; }
+  .summary.idle { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+  .summary.warn { background: color-mix(in srgb, var(--bad) 18%, var(--surface)); color: var(--text); }
+
+  .help { margin-top: 18px; color: var(--muted); font-size: 13px; }
+  .help summary { cursor: pointer; }
+  .help p { margin: 8px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>คุ้มไหม<span>?</span></h1>
+      <div class="sub">เทียบราคาต่อหน่วย แพ็คไหนถูกกว่า</div>
+    </div>
+    <button class="btn" id="reset" type="button">ล้างค่า</button>
+  </header>
+
+  <div class="items" id="items"></div>
+  <button class="add" id="add" type="button">+ เพิ่มสินค้าที่จะเทียบ</button>
+
+  <div class="summary idle" id="summary" aria-live="polite">กรอกราคาและจำนวนอย่างน้อย 2 รายการ</div>
+
+  <details class="help">
+    <summary>วิธีใช้</summary>
+    <p><b>ราคา</b> = ราคาที่จ่ายทั้งแพ็ค · <b>จำนวน</b> = กี่ชิ้นในแพ็ค · <b>ขนาด/ชิ้น</b> = ปริมาณต่อชิ้น (เช่น 330 ml, 50 g) ไม่ต้องกรอกถ้าเทียบแค่จำนวนชิ้น</p>
+    <p>ตัวอย่าง: น้ำ 12 ขวด × 600 ml ราคา 89 บาท เทียบกับ 6 ขวด × 1.5 L ราคา 99 บาท — แอปแปลงหน่วยให้อัตโนมัติ</p>
+  </details>
+</div>
+
+<template id="tpl">
+  <div class="card">
+    <div class="card-head">
+      <div class="badge"></div>
+      <input class="name" type="text" placeholder="ตั้งชื่อ…" maxlength="40">
+      <button class="remove" type="button" aria-label="ลบรายการ">×</button>
+    </div>
+    <label class="field"><span>ราคา (บาท)</span>
+      <input class="num" data-k="price" inputmode="decimal" placeholder="0.00" autocomplete="off">
+    </label>
+    <label class="field"><span>จำนวน (ชิ้นในแพ็ค)</span>
+      <input class="num" data-k="qty" inputmode="decimal" placeholder="1" autocomplete="off">
+    </label>
+    <div class="field"><span>ขนาด/ชิ้น</span>
+      <div class="row">
+        <input class="num" data-k="size" inputmode="decimal" placeholder="1" autocomplete="off" aria-label="ขนาดต่อชิ้น">
+        <select data-k="unit" aria-label="หน่วย">
+          <option value="pc">ชิ้น</option>
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">L</option>
+        </select>
+      </div>
+    </div>
+    <div class="result"></div>
+  </div>
+</template>
+
+<script>
+(() => {
+  // หน่วย → [กลุ่ม, ตัวคูณไปหน่วยฐาน, ชื่อหน่วยฐานที่โชว์]
+  const UNITS = {
+    pc: ['count', 1],
+    g:  ['weight', 1],
+    kg: ['weight', 1000],
+    ml: ['volume', 1],
+    l:  ['volume', 1000],
+  };
+  // แสดงราคาต่อหน่วยที่อ่านง่าย
+  const DISPLAY = {
+    count:  { per: 1,   label: 'ชิ้น' },
+    weight: { per: 100, label: '100 g' },
+    volume: { per: 100, label: '100 ml' },
+  };
+  const MAX = 6, KEY = 'kummai.v1';
+  const $items = document.getElementById('items');
+  const $summary = document.getElementById('summary');
+  const $add = document.getElementById('add');
+  const tpl = document.getElementById('tpl');
+
+  let state = load() || [blank(), blank()];
+
+  function blank() { return { name: '', price: '', qty: '', size: '', unit: 'pc' }; }
+  function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(s) && s.length >= 2 ? s : null; } catch { return null; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
+
+  const num = v => {
+    if (v === '' || v == null) return NaN;
+    const n = parseFloat(String(v).replace(/,/g, '').trim());
+    return isFinite(n) ? n : NaN;
+  };
+  const fmt = (n, d = 2) => n.toLocaleString('th-TH', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const fmtSmart = n => fmt(n, n < 1 ? 4 : n < 10 ? 3 : 2);
+
+  function compute(it) {
+    const price = num(it.price);
+    const qty = isNaN(num(it.qty)) ? 1 : num(it.qty);
+    const size = isNaN(num(it.size)) ? 1 : num(it.size);
+    const [group, mult] = UNITS[it.unit] || UNITS.pc;
+    const total = qty * size * mult;           // ปริมาณรวมในหน่วยฐาน
+    if (!(price > 0) || !(total > 0)) return null;
+    return { group, perBase: price / total, total };
+  }
+
+  function render() {
+    $items.innerHTML = '';
+    state.forEach((it, i) => {
+      const el = tpl.content.firstElementChild.cloneNode(true);
+      el.dataset.i = i;
+      el.querySelector('.badge').textContent = i + 1;
+      el.querySelector('.name').value = it.name;
+      el.querySelectorAll('[data-k]').forEach(f => f.value = it[f.dataset.k]);
+      el.querySelector('.remove').hidden = state.length <= 2;
+      $items.appendChild(el);
+    });
+    $add.hidden = state.length >= MAX;
+    update();
+  }
+
+  function update() {
+    const res = state.map(compute);
+    const valid = res.map((r, i) => r && { ...r, i }).filter(Boolean);
+    const groups = new Set(valid.map(r => r.group));
+    const mixed = groups.size > 1;
+    const group = valid[0]?.group;
+    const disp = DISPLAY[group] || DISPLAY.count;
+    const ranked = mixed ? [] : [...valid].sort((a, b) => a.perBase - b.perBase);
+    const best = ranked[0], worst = ranked[ranked.length - 1];
+    const tie = ranked.length >= 2 && Math.abs(ranked[0].perBase - ranked[1].perBase) < 1e-9;
+
+    [...$items.children].forEach((el, i) => {
+      const r = res[i];
+      const out = el.querySelector('.result');
+      el.classList.toggle('best', !!best && ranked.length >= 2 && !tie && best.i === i);
+      if (!r) { out.innerHTML = '<div class="verdict">ใส่ราคาเพื่อคำนวณ</div>'; return; }
+      const d = DISPLAY[r.group];
+      let verdict = '';
+      if (ranked.length >= 2 && !mixed) {
+        if (Math.abs(r.perBase - best.perBase) < 1e-9) verdict = tie ? '<div class="verdict">ราคาเท่ากัน</div>' : '<div class="verdict">✓ คุ้มที่สุด</div>';
+        else {
+          const pct = (r.perBase / best.perBase - 1) * 100;
+          verdict = `<div class="verdict worse">แพงกว่า ${fmt(pct, 1)}%</div>`;
+        }
+      }
+      out.innerHTML = `<div class="unit-price">฿${fmtSmart(r.perBase * d.per)} <small>/ ${d.label}</small></div>${verdict}`;
+    });
+
+    if (mixed) {
+      $summary.className = 'summary warn';
+      $summary.innerHTML = 'หน่วยไม่ตรงกัน — เทียบ <b>น้ำหนัก</b> กับ <b>ปริมาตร</b> หรือ <b>ชิ้น</b> ไม่ได้ ให้เลือกหน่วยกลุ่มเดียวกัน';
+    } else if (ranked.length < 2) {
+      $summary.className = 'summary idle';
+      $summary.textContent = 'กรอกราคาและจำนวนอย่างน้อย 2 รายการ';
+    } else if (tie && Math.abs(best.perBase - worst.perBase) < 1e-9) {
+      $summary.className = 'summary';
+      $summary.innerHTML = '<b>ราคาต่อหน่วยเท่ากันทุกรายการ</b><div class="hint">เลือกแบบไหนก็ได้ 😄</div>';
+    } else {
+      const label = i => state[i].name.trim() || `รายการ ${i + 1}`;
+      // ใช้ % แบบเดียวกับในการ์ด (เทียบกับอันที่คุ้มสุด) จะได้ไม่สับสน
+      const pct = (worst.perBase / best.perBase - 1) * 100;
+      // ประหยัดเท่าไหร่ถ้าซื้อปริมาณเท่ากับแพ็คที่แพงสุด
+      const save = (worst.perBase - best.perBase) * worst.total;
+      $summary.className = 'summary';
+      $summary.innerHTML = `<b>${esc(label(best.i))} คุ้มที่สุด</b> · ${esc(label(worst.i))} แพงกว่า ${fmt(pct, 1)}%` +
+        `<div class="hint">ได้ปริมาณเท่ากับ ${esc(label(worst.i))} จะประหยัด ฿${fmt(save)}</div>`;
+    }
+  }
+
+  const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  $items.addEventListener('input', e => {
+    const card = e.target.closest('.card'); if (!card) return;
+    const it = state[+card.dataset.i];
+    if (e.target.classList.contains('name')) it.name = e.target.value;
+    else if (e.target.dataset.k) {
+      if (e.target.tagName === 'INPUT') {
+        // รับแค่ตัวเลข จุด และคอมมา
+        const clean = e.target.value.replace(/[^\d.,]/g, '');
+        if (clean !== e.target.value) e.target.value = clean;
+      }
+      it[e.target.dataset.k] = e.target.value;
+    }
+    save(); update();
+  });
+  $items.addEventListener('change', e => {
+    if (e.target.tagName !== 'SELECT') return;
+    state[+e.target.closest('.card').dataset.i].unit = e.target.value;
+    save(); update();
+  });
+  $items.addEventListener('click', e => {
+    if (!e.target.classList.contains('remove')) return;
+    state.splice(+e.target.closest('.card').dataset.i, 1);
+    save(); render();
+  });
+  // กด Enter/Next แล้วไปช่องถัดไป
+  $items.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+    e.preventDefault();
+    const all = [...$items.querySelectorAll('input.num')];
+    const next = all[all.indexOf(e.target) + 1];
+    next ? next.focus() : e.target.blur();
+  });
+  $add.addEventListener('click', () => {
+    if (state.length >= MAX) return;
+    const prev = state[state.length - 1];
+    state.push({ ...blank(), unit: prev.unit });   // ใช้หน่วยเดียวกับรายการก่อนหน้า
+    save(); render();
+    $items.lastElementChild.querySelector('input.num').focus();
+  });
+  document.getElementById('reset').addEventListener('click', () => {
+    state = [blank(), blank()]; save(); render();
+  });
+
+  render();
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
