@@ -1,5 +1,5 @@
 // Offline cache — bump VERSION when files change
-const VERSION = 'kummai-v1';
+const VERSION = 'kummai-v2';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

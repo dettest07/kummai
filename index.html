@@ -159,6 +159,7 @@
     <summary>วิธีใช้</summary>
     <p><b>ราคา</b> = ราคาที่จ่ายทั้งแพ็ค · <b>จำนวน</b> = กี่ชิ้นในแพ็ค · <b>ขนาด/ชิ้น</b> = ปริมาณต่อชิ้น (เช่น 330 ml, 50 g) ไม่ต้องกรอกถ้าเทียบแค่จำนวนชิ้น</p>
     <p>ตัวอย่าง: น้ำ 12 ขวด × 600 ml ราคา 89 บาท เทียบกับ 6 ขวด × 1.5 L ราคา 99 บาท — แอปแปลงหน่วยให้อัตโนมัติ</p>
+    <p>ซื้อเป็นโหล: ใส่จำนวน = กี่โหล แล้วเลือกหน่วย "โหล" (12 ชิ้น) หรือ "ครึ่งโหล" (6 ชิ้น) — ราคาจะคิดเป็นต่อชิ้น</p>
   </details>
 </div>
 
@@ -180,6 +181,8 @@
         <input class="num" data-k="size" inputmode="decimal" placeholder="1" autocomplete="off" aria-label="ขนาดต่อชิ้น">
         <select data-k="unit" aria-label="หน่วย">
           <option value="pc">ชิ้น</option>
+          <option value="halfdoz">ครึ่งโหล</option>
+          <option value="doz">โหล</option>
           <option value="g">g</option>
           <option value="kg">kg</option>
           <option value="ml">ml</option>
@@ -196,6 +199,8 @@
   // หน่วย → [กลุ่ม, ตัวคูณไปหน่วยฐาน, ชื่อหน่วยฐานที่โชว์]
   const UNITS = {
     pc: ['count', 1],
+    halfdoz: ['count', 6],
+    doz: ['count', 12],
     g:  ['weight', 1],
     kg: ['weight', 1000],
     ml: ['volume', 1],
